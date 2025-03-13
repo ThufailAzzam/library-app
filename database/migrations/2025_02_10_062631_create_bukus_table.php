@@ -21,6 +21,8 @@ return new class extends Migration
             $table->year('tahun_terbit');
             $table->integer('stok')->default(0);
             $table->decimal('harga_buku', 8, 2)->default(0);
+            $table->unsignedBigInteger('request_id')->nullable();
+            $table->foreign('request_id')->references('id')->on('perminatan_bukus')->onDelete('set null');
             $table->timestamps();
         });
     }

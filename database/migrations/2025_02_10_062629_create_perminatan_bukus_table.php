@@ -23,6 +23,7 @@ return new class extends Migration
             // $table->foreign('id_buku')->references('id')->on('bukus')->onDelete('cascade');
             // $table->dateTime('tgl_permintaan');
             $table->string('alasan_permintaan');
+            $table->enum('status', ['pending', 'approved', 'rejected'])->default('pending');
             $table->timestamps();
         });
     }
@@ -32,6 +33,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('perminatan__bukus');
+        Schema::dropIfExists('perminatan_bukus');
     }
 };

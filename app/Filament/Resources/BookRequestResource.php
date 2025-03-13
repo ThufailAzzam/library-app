@@ -7,6 +7,7 @@ use App\Filament\Resources\BookRequestResource\Pages;
 use App\Models\BookRequest;
 use Filament\Forms\Components\Section;
 use App\Models\BookModel;
+use Illuminate\Support\Collection;
 use Filament\Forms\Components\Textarea;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
@@ -20,11 +21,13 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\BadgeColumn;
 use Filament\Notifications\Notification;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\TimePicker;
 use Filament\Tables\Actions\Action;
+use Illuminate\Support\HtmlString;
 
 class BookRequestResource extends Resource
 {
@@ -44,32 +47,37 @@ class BookRequestResource extends Resource
     {
         return $form
             ->schema([
-
                 Hidden::make('id_user')
                     ->default(fn () => Auth::id()),
                 Section::make('Info Buku yang Diinginkan')
                     ->schema([
                         Group::make()
                             ->schema([
-                                TextInput::make('judul')->label('Judul')->required(),
-                                TextInput::make('penulis')->label('Penulis')->nullable(),
-                                TextInput::make('kode_buku')->label('Kode ISBN')->nullable(),
-                                TextInput::make('penerbit')->label('Penerbit')->nullable(),
-                                TextInput::make('tahun_terbit')->label('Tahun Terbit')->nullable(),
+                                TextInput::make('judul')
+                                    ->label('Judul')
+                                    ->required()
+                                    ,
+                                TextInput::make('penulis')
+                                    ->label('Penulis')
+                                    ->nullable()
+                                    ,
+                                TextInput::make('kode_buku')
+                                    ->label('Kode ISBN')
+                                    ->nullable(),
+                                TextInput::make('penerbit')
+                                    ->label('Penerbit')
+                                    ->nullable(),
+                                TextInput::make('tahun_terbit')
+                                    ->label('Tahun Terbit')
+                                    ->nullable(),
                             ]),
                         
                         ]),
                 
-                //Select::make('id_user')
-                    //->label('Pengguna')
-                    //->relationship('user', 'name')
-                   // ->searchable()
-                   // ->preload()
-                   // ->required(),
-                
                 Textarea::make('alasan_permintaan')
                     ->label('Alasan Permintaan')
                     ->required()
+                    
                     ->placeholder('Jelaskan mengapa buku ini perlu ditambahkan ke perpustakaan...')
                     ->helperText('Sertakan detail tambahan seperti penulis, penerbit, dan tahun terbit jika buku belum terdaftar')
                     ->maxLength(255),
@@ -113,6 +121,15 @@ class BookRequestResource extends Resource
                         return $record->alasan_permintaan;
                     }),
                 
+                TextColumn::make('status')
+                    ->label('Status')
+                    ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        'approved' => 'success',
+                        'rejected' => 'danger',
+                        default => 'warning',
+                    }),
+                
                 TextColumn::make('created_at')
                     ->label('Tanggal Permintaan')
                     ->dateTime()
@@ -130,58 +147,108 @@ class BookRequestResource extends Resource
                         return $query
                             ->when(
                                 $data['created_from'],
-                                fn (Builder $query, $date): Builder => $query->whereDate('tgl_permintaan', '>=', $date),
+                                fn (Builder $query, $date): Builder => $query->whereDate('created_at', '>=', $date),
                             )
                             ->when(
                                 $data['created_until'],
-                                fn (Builder $query, $date): Builder => $query->whereDate('tgl_permintaan', '<=', $date),
+                                fn (Builder $query, $date): Builder => $query->whereDate('created_at', '<=', $date),
                             );
-                    })
+                    }),
+                
+                Tables\Filters\SelectFilter::make('status')
+                    ->options([
+                        'pending' => 'Pending',
+                        'approved' => 'Approved',
+                        'rejected' => 'Rejected',
+                    ])
+                    ->label('Status')
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                Tables\Actions\EditAction::make()
+                    ->visible(fn (BookRequest $record) => $record->status === 'pending'),
+                
+                Tables\Actions\DeleteAction::make()
+                    ->visible(fn (BookRequest $record) => $record->status === 'pending'),
+                
                 Action::make('approveRequest')
                     ->label('Approve')
                     ->icon('heroicon-o-check-circle')
                     ->color('success')
                     ->action(function (BookRequest $record) {
-                        // Check if this is a request for an existing book
-                        if ($record->book) {
-                            // The book exists, you could update stock or mark as approved
-                            Notification::make()
-                                ->title('Permintaan disetujui')
-                                ->success()
-                                ->send();
-                        } else {
-                            // This is a request for a new book, redirect to create book form
-                            // In a real implementation, you might want to redirect or create a new book
-                            Notification::make()
-                                ->title('Permintaan untuk buku baru disetujui')
-                                ->success()
-                                ->actions([
-                                    \Filament\Notifications\Actions\Action::make('create')
-                                        ->label('Tambah Buku')
-                                        ->url(BookResource::getUrl('create'))
-                                        ->button(),
-                                ])
-                                ->send();
-                        }
+                        // Update the status to approved
+                        $record->status = 'approved';
+                        $record->save();
                         
-                        // Delete the request after approval (optional)
-                        // $record->delete();
+                        Notification::make()
+                            ->title('Permintaan disetujui')
+                            ->success()
+                            ->send();
                     })
                     ->requiresConfirmation()
                     ->modalHeading('Approve Book Request')
                     ->modalDescription('Are you sure you want to approve this request?')
-                    ->modalSubmitActionLabel('Yes, approve request'),
+                    ->modalSubmitActionLabel('Yes, approve request')
+                    ->visible(fn (BookRequest $record) => $record->status === 'pending'),
+                
+                Action::make('rejectRequest')
+                    ->label('Reject')
+                    ->icon('heroicon-o-x-circle')
+                    ->color('danger')
+                    ->action(function (BookRequest $record) {
+                        $record->status = 'rejected';
+                        $record->save();
+                        
+                        Notification::make()
+                            ->title('Permintaan ditolak')
+                            ->danger()
+                            ->send();
+                    })
+                    ->requiresConfirmation()
+                    ->modalHeading('Reject Book Request')
+                    ->modalDescription('Are you sure you want to reject this request?')
+                    ->modalSubmitActionLabel('Yes, reject request')
+                    ->visible(fn (BookRequest $record) => $record->status === 'pending'),
+                
+                Action::make('createBook')
+                    ->label('Add to Library')
+                    ->icon('heroicon-o-plus-circle')
+                    ->color('primary')
+                    ->url(function (BookRequest $record) {
+                        // Pass the request ID as a parameter to the book creation page
+                        return BookResource::getUrl('create', ['request_id' => $record->id]);
+                    })
+                    ->openUrlInNewTab()
+                    ->visible(fn (BookRequest $record) => $record->isApproved()),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                ]),
-            ]);
-    }
+                    Tables\Actions\DeleteBulkAction::make()
+                    ->hidden(fn (BookRequest $record) => $record->isApproved()),
+                
+                Tables\Actions\BulkAction::make('approveBulk')
+                    ->label('Approve Selected')
+                    ->icon('heroicon-o-check-circle')
+                    ->color('success')
+                    ->action(function (Collection $records) {
+                        $records->each(function ($record) {
+                            if (!$record->isApproved()) {
+                                $record->status = 'approved';
+                                $record->save();
+                            }
+                        });
+                        
+                        Notification::make()
+                            ->title('Selected requests approved')
+                            ->success()
+                            ->send();
+                    })
+                    ->requiresConfirmation()
+                    ->modalHeading('Approve Selected Requests')
+                    ->modalDescription('Are you sure you want to approve all selected requests?')
+                    ->modalSubmitActionLabel('Yes, approve requests'),
+            ]),
+        ]);
+}
 
     public static function getRelations(): array
     {
@@ -198,6 +265,4 @@ class BookRequestResource extends Resource
             'edit' => Pages\EditBookRequest::route('/{record}/edit'),
         ];
     }
-
-
 }

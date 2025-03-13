@@ -134,6 +134,7 @@ class BorrowResource extends Resource
                 Tables\Actions\DeleteAction::make(),
                 Tables\Actions\Action::make('return')
                 ->label('Pengembalian Buku')
+                ->color('success')
                 ->visible(fn ($record) => in_array($record->status, ['active', 'overdue']))
                 ->form([
                     Select::make('condition')

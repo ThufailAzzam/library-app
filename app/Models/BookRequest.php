@@ -25,6 +25,7 @@ class BookRequest extends Model
         'penerbit',
         'tahun_terbit',
         'alasan_permintaan',
+        'status',
     ];
 
     // Relationship with User model
@@ -37,5 +38,16 @@ class BookRequest extends Model
     public function book(): BelongsTo
     {
         return $this->belongsTo(BookModel::class, 'id_buku');
+    }
+
+    public function isApproved(): bool
+    {
+        return $this->status === 'approved';
+    }
+    
+    // Helper method to check if the request is pending
+    public function isPending(): bool
+    {
+        return $this->status === 'pending';
     }
 }

@@ -11,8 +11,10 @@ use App\Filament\Resources\BookResource\Pages;
 use App\Filament\Resources\BookResource\RelationManagers;
 use App\Models\Book;
 use App\Models\BookModel;
+use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Filters\TernaryFilter;
 use Filament\Forms;
-
+use Filament\Forms\Components\Hidden;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
@@ -42,6 +44,8 @@ class BookResource extends Resource
     {
         return $form
             ->schema([
+                Hidden::make('request_id'),
+
                 TextInput::make('judul')
                 ->required()
                 ->label('Judul Buku')
@@ -67,7 +71,7 @@ class BookResource extends Resource
                 TextInput::make('tahun_terbit')
                 ->required()
                 ->numeric()
-                ->minValue(1950)
+                ->minValue(1850)
                 ->maxValue(2100)
                 ->label('Tahun Terbit')
                 ->placeholder('Masukkan Tahun Terbit Buku...'),
@@ -135,18 +139,31 @@ class BookResource extends Resource
                 ->getStateUsing(function (BookModel $record) {
                     return $record->logBuku()->count();
                 }),
+
+                TextColumn::make('from_request')
+                    ->label('Dari Request')
+                    ->getStateUsing(fn (BookModel $record) => $record->request_id ? 'Yes' : 'No')
+                    ->badge()
+                    ->color(fn (string $state): string => $state === 'Yes' ? 'success' : 'gray'),
                 
             ])
             ->filters([
-                Tables\Filters\SelectFilter::make('kategori')
+                SelectFilter::make('kategori')
                 ->label('Kategori Buku')
                 ->relationship('categories', 'nama_kategori'),
+                TernaryFilter::make('from_request')
+                    ->label('From Request')
+                    ->queries(
+                        true: fn (Builder $query) => $query->whereNotNull('request_id'),
+                        false: fn (Builder $query) => $query->whereNull('request_id'),
+                    ),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
                 Action::make('decreaseStock')
                 ->label('Decrease Stock')
+                ->color('danger')
                 ->icon('heroicon-o-minus')
                 ->form([
                     Forms\Components\TextInput::make('reason')
@@ -181,7 +198,17 @@ class BookResource extends Resource
                 ->modalHeading('Decrease Stock')
                 ->modalDescription('Are you sure you want to decrease the stock of this book?')
                 ->modalSubmitActionLabel('Yes, decrease stock'),
+
+                Action::make('viewRequest')
+                    ->label('View Request')
+                    ->icon('heroicon-o-eye')
+                    ->url(fn (BookModel $record) => $record->request_id 
+                        ? BookRequestResource::getUrl('edit', ['record' => $record->request_id]) 
+                        : null)
+                    ->openUrlInNewTab()
+                    ->visible(fn (BookModel $record) => !empty($record->request_id)),
             ])
+            
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
