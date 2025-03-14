@@ -56,20 +56,23 @@ class BookRequestResource extends Resource
                                 TextInput::make('judul')
                                     ->label('Judul')
                                     ->required()
-                                    ,
+                                    ->disabled(fn ($record) => $record && $record->isApproved()),
                                 TextInput::make('penulis')
                                     ->label('Penulis')
                                     ->nullable()
-                                    ,
+                                    ->disabled(fn ($record) => $record && $record->isApproved()),
                                 TextInput::make('kode_buku')
                                     ->label('Kode ISBN')
-                                    ->nullable(),
+                                    ->nullable()
+                                    ->disabled(fn ($record) => $record && $record->isApproved()),
                                 TextInput::make('penerbit')
                                     ->label('Penerbit')
-                                    ->nullable(),
+                                    ->nullable()
+                                    ->disabled(fn ($record) => $record && $record->isApproved()),
                                 TextInput::make('tahun_terbit')
                                     ->label('Tahun Terbit')
-                                    ->nullable(),
+                                    ->nullable()
+                                    ->disabled(fn ($record) => $record && $record->isApproved()),
                             ]),
                         
                         ]),
@@ -80,7 +83,8 @@ class BookRequestResource extends Resource
                     
                     ->placeholder('Jelaskan mengapa buku ini perlu ditambahkan ke perpustakaan...')
                     ->helperText('Sertakan detail tambahan seperti penulis, penerbit, dan tahun terbit jika buku belum terdaftar')
-                    ->maxLength(255),
+                    ->maxLength(255)
+                    ->disabled(fn ($record) => $record && $record->isApproved()),
                         
         ]);
     }
