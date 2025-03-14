@@ -113,6 +113,7 @@ class BookResource extends Resource
                 ->sortable(),
                 TextColumn::make('categories.nama_kategori') // Display the category names
                 ->label('Kategori')
+                ->badge()
                 ->searchable()
                 ->sortable(),
                 TextColumn::make('penerbit')

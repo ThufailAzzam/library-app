@@ -36,7 +36,7 @@ class MobilResource extends Resource
                 TextInput::make('thn_pembuatan'),
                 TextInput::make('warna'),
                 Select::make('books') // Use the relationship method
-                ->relationship('books', 'judul') // Assuming 'judul' is the title of the book
+                ->relationship('books', 'judul') 
                 ->label('Books')
                 ->multiple(),
             ]);
