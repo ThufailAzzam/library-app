@@ -23,6 +23,7 @@ class BookModel extends Model
         'stok',
         'harga_buku',
         'request_id', 
+        'cover_buku',
     ];
 
     public function borrow()

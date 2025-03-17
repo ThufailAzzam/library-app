@@ -16,6 +16,7 @@ return new class extends Migration
             $table->string('judul');
             $table->string('penulis');
             $table->string('kode_buku')->unique();
+            $table->string('cover_buku')->nullable();
             $table->string('penerbit', 50);
             $table->integer('jumlah_pinjam')->default(0);
             $table->year('tahun_terbit');

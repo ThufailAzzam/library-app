@@ -7,6 +7,8 @@ use App\Models\KategoriBuku;
 use Filament\Forms\Components\Textarea;
 use App\Filament\Resources\BookResource\Pages\PopularBooks;
 use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\FileUpload;
+use Filament\Tables\Columns\ImageColumn;
 use App\Filament\Resources\BookResource\RelationManagers\LogBukuRelationManager;
 use App\Filament\Resources\BookResource\RelationManagers\BookRequestsRelationManager;
 use App\Filament\Resources\BookResource\Pages;
@@ -69,6 +71,16 @@ class BookResource extends Resource
                 ->required()
                 ->label('Penulis/Author Buku')
                 ->placeholder('Masukkan Nama Penulis....'),
+                FileUpload::make('cover_buku')
+                    ->label('Cover Buku')
+                    ->helperText('Unggah foto cover buku')
+                    ->image()
+                    ->imageResizeMode('cover')
+                    
+                    ->directory('fotocover')
+                    ->visibility('public')
+                    ->maxSize(5120) // 5MB
+                    ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/jpg', 'image/webp']),
                 TextInput::make('kode_buku')
                 ->required()
                 ->numeric()
@@ -101,11 +113,11 @@ class BookResource extends Resource
                 ->label('Harga Buku')
                 ->placeholder('Masukkan Harga Buku....')
                 ->prefix('IDR'),
-                CheckboxList::make('mobil') // Add this line
-                ->relationship('mobil', 'nopol') // Assuming 'nopol' is the car's license plate
-                ->label('Cars'),
 
             ]),
+            CheckboxList::make('mobil') // Add this line
+                ->relationship('mobil', 'nopol') // Assuming 'nopol' is the car's license plate
+                ->label('Cars'),
 
             ]);
     }
@@ -119,6 +131,14 @@ class BookResource extends Resource
                 ->searchable()
                 ->copyable()
                 ->sortable(),
+
+                ImageColumn::make('cover_buku')
+                    ->disk('public')
+                    ->label('Cover Buku')
+                    ->defaultImageUrl(url('/storage/copanya.png')) 
+                    ->extraImgAttributes(['loading' => 'lazy'])
+                    ->visibility('public'),
+
                 TextColumn::make('penulis')
                 ->searchable()
                 ->copyable()
