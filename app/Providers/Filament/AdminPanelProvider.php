@@ -43,7 +43,7 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->plugin(FilamentSpatieRolesPermissionsPlugin::make())
             ->databaseNotifications()
-            ->spa()
+            
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,

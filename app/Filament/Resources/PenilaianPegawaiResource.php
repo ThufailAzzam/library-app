@@ -153,11 +153,12 @@ class PenilaianPegawaiResource extends Resource
                     ->sortable(),
                 
                 ImageColumn::make('foto_kejadian')
-                    ->label('Foto')
-                    ->circular(false)
-                    ->square()
-                    ->defaultImageUrl(url('/storage/copana.jpg')) 
-                    ->extraImgAttributes(['loading' => 'lazy'])
+                    ->disk('public')
+                    // ->label('Foto')
+                    // ->circular(false)
+                    // ->square()
+                    ->defaultImageUrl(url('/storage/copanga.webp')) 
+                    // ->extraImgAttributes(['loading' => 'lazy'])
                     ->visibility('public'),
                 
                 

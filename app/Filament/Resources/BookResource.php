@@ -3,6 +3,8 @@
 namespace App\Filament\Resources;
 
 use App\Models\LogBuku;
+use App\Models\KategoriBuku;
+use Filament\Forms\Components\Textarea;
 use App\Filament\Resources\BookResource\Pages\PopularBooks;
 use Filament\Forms\Components\DatePicker;
 use App\Filament\Resources\BookResource\RelationManagers\LogBukuRelationManager;
@@ -28,7 +30,8 @@ use Filament\Tables\Actions\Action;
 use Filament\Notifications\Notification;
 use Filament\Forms\Components\CheckboxList;
 use DesignTheBox\BarcodeField\Forms\Components\BarcodeInput;
-use App\View\Components\ISBNScanner;
+use App\Filament\Forms\Components\IsbnScannerField;
+use Filament\Forms\Components\Section;
 
 class BookResource extends Resource
 {
@@ -44,6 +47,18 @@ class BookResource extends Resource
     {
         return $form
             ->schema([
+                Section::make('ISBN Scanner')
+                    ->description('Scan or search for a book by ISBN')
+                    ->schema([
+                        IsbnScannerField::make('scanner')
+                            ->label('Scan ISBN')
+                            ->columnSpan(2),
+                    ])
+                    ->collapsible(),
+
+                
+                Section::make('Book Information')
+                ->schema([
                 Hidden::make('request_id'),
 
                 TextInput::make('judul')
@@ -89,6 +104,8 @@ class BookResource extends Resource
                 CheckboxList::make('mobil') // Add this line
                 ->relationship('mobil', 'nopol') // Assuming 'nopol' is the car's license plate
                 ->label('Cars'),
+
+            ]),
 
             ]);
     }
@@ -159,6 +176,36 @@ class BookResource extends Resource
                         false: fn (Builder $query) => $query->whereNull('request_id'),
                     ),
             ])
+            ->headerActions([
+                Action::make('add_genre')
+                    ->label('Tambah Genre Baru')
+                    ->icon('heroicon-o-plus-circle')
+                    ->color('success')
+                    ->slideOver()
+                    ->modalHeading('Tambah Genre Buku Baru')
+                    ->modalDescription('Tambahkan genre/kategori buku baru yang akan tersedia untuk semua buku.')
+                    ->form([
+                        TextInput::make('nama_kategori')
+                            ->label('Nama Genre')
+                            ->required()
+                            ->maxLength(255),
+                        Textarea::make('deskripsi_kategori')
+                            ->label('Deskripsi')
+                            ->required(),
+                    ])
+                    ->action(function (array $data): void {
+                        $kategori = KategoriBuku::create([
+                            'nama_kategori' => $data['nama_kategori'],
+                            'deskripsi_kategori' => $data['deskripsi_kategori'],
+                        ]);
+
+                        Notification::make()
+                            ->title('Genre buku berhasil ditambahkan')
+                            ->success()
+                            ->body('Genre "' . $kategori->nama_kategori . '" telah berhasil ditambahkan ke database.')
+                            ->send();
+                    })
+            ])
             ->actions([
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
@@ -218,12 +265,12 @@ class BookResource extends Resource
     }
 
     public static function getRelations(): array
-{
-    return [
-        LogBukuRelationManager::class,
-        
-    ];
-}
+    {
+        return [
+            LogBukuRelationManager::class,
+            
+        ];
+    }
 
     public static function getPages(): array
     {
