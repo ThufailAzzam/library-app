@@ -17,6 +17,17 @@ use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
+use Althinect\FilamentSpatieRolesPermissions\FilamentSpatieRolesPermissionsPlugin;
+
+// Import your resources
+use App\Filament\Resources\BookRequestResource;
+use App\Filament\Resources\BookResource;
+use App\Filament\Resources\BorrowResource;
+use App\Filament\Resources\KategoriBukuResource;
+use App\Filament\Resources\MobilResource;
+use App\Filament\Resources\PenilaianPegawaiResource;
+use App\Filament\Resources\PopularitasResource;
+use App\Filament\Resources\UserResource;
 
 class PesertaPanelProvider extends PanelProvider
 {
@@ -26,13 +37,20 @@ class PesertaPanelProvider extends PanelProvider
             ->id('peserta')
             ->path('peserta')
             ->login()
+            ->databaseNotifications()
             ->colors([
                 'primary' => Color::Amber,
             ])
-            ->discoverResources(in: app_path('Filament/Peserta/Resources'), for: 'App\\Filament\\Peserta\\Resources')
+            ->discoverResources(in: app_path('Filament/PesertaResources'), for: 'App\\Filament\\Peserta\\Resources')
             ->discoverPages(in: app_path('Filament/Peserta/Pages'), for: 'App\\Filament\\Peserta\\Pages')
             ->pages([
                 Pages\Dashboard::class,
+            ])
+            ->resources([
+                BookRequestResource::class,
+                BookResource::class,
+                PenilaianPegawaiResource::class,
+                PopularitasResource::class,
             ])
             ->discoverWidgets(in: app_path('Filament/Peserta/Widgets'), for: 'App\\Filament\\Peserta\\Widgets')
             ->widgets([
@@ -52,6 +70,7 @@ class PesertaPanelProvider extends PanelProvider
             ])
             ->authMiddleware([
                 Authenticate::class,
-            ]);
+            ])
+            ->plugin(FilamentSpatieRolesPermissionsPlugin::make());
     }
 }

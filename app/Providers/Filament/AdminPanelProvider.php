@@ -19,6 +19,16 @@ use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 use Althinect\FilamentSpatieRolesPermissions\FilamentSpatieRolesPermissionsPlugin;
 
+// Import your resources
+use App\Filament\Resources\BookRequestResource;
+use App\Filament\Resources\BookResource;
+use App\Filament\Resources\BorrowResource;
+use App\Filament\Resources\KategoriBukuResource;
+use App\Filament\Resources\MobilResource;
+use App\Filament\Resources\PenilaianPegawaiResource;
+use App\Filament\Resources\PopularitasResource;
+use App\Filament\Resources\UserResource;
+
 class AdminPanelProvider extends PanelProvider
 {
     public function panel(Panel $panel): Panel
@@ -36,6 +46,16 @@ class AdminPanelProvider extends PanelProvider
             ->pages([
                 Pages\Dashboard::class,
             ])
+            ->resources([
+                BookRequestResource::class,
+                BookResource::class,
+                BorrowResource::class,
+                KategoriBukuResource::class,
+                MobilResource::class,
+                PenilaianPegawaiResource::class,
+                PopularitasResource::class,
+                UserResource::class,
+            ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
             ->widgets([
                 Widgets\AccountWidget::class,
@@ -43,7 +63,6 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->plugin(FilamentSpatieRolesPermissionsPlugin::make())
             ->databaseNotifications()
-            
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,

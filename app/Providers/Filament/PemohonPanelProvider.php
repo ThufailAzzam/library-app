@@ -17,6 +17,17 @@ use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
+use Althinect\FilamentSpatieRolesPermissions\FilamentSpatieRolesPermissionsPlugin;
+
+// Import your resources
+use App\Filament\Resources\BookRequestResource;
+use App\Filament\Resources\BookResource;
+use App\Filament\Resources\BorrowResource;
+use App\Filament\Resources\KategoriBukuResource;
+use App\Filament\Resources\MobilResource;
+use App\Filament\Resources\PenilaianPegawaiResource;
+use App\Filament\Resources\PopularitasResource;
+use App\Filament\Resources\UserResource;
 
 class PemohonPanelProvider extends PanelProvider
 {
@@ -26,6 +37,7 @@ class PemohonPanelProvider extends PanelProvider
             ->id('pemohon')
             ->path('pemohon')
             ->login()
+            ->databaseNotifications()
             ->colors([
                 'primary' => Color::Amber,
             ])
@@ -33,6 +45,12 @@ class PemohonPanelProvider extends PanelProvider
             ->discoverPages(in: app_path('Filament/Pemohon/Pages'), for: 'App\\Filament\\Pemohon\\Pages')
             ->pages([
                 Pages\Dashboard::class,
+            ])
+            ->resources([
+                BookRequestResource::class,
+                BookResource::class,
+                PenilaianPegawaiResource::class,
+                PopularitasResource::class,
             ])
             ->discoverWidgets(in: app_path('Filament/Pemohon/Widgets'), for: 'App\\Filament\\Pemohon\\Widgets')
             ->widgets([
@@ -52,6 +70,7 @@ class PemohonPanelProvider extends PanelProvider
             ])
             ->authMiddleware([
                 Authenticate::class,
-            ]);
+            ])
+            ->plugin(FilamentSpatieRolesPermissionsPlugin::make());
     }
 }

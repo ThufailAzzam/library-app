@@ -17,6 +17,17 @@ use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
+use Althinect\FilamentSpatieRolesPermissions\FilamentSpatieRolesPermissionsPlugin;
+
+// Import your resources
+use App\Filament\Resources\BookRequestResource;
+use App\Filament\Resources\BookResource;
+use App\Filament\Resources\BorrowResource;
+use App\Filament\Resources\KategoriBukuResource;
+use App\Filament\Resources\MobilResource;
+use App\Filament\Resources\PenilaianPegawaiResource;
+use App\Filament\Resources\PopularitasResource;
+use App\Filament\Resources\UserResource;
 
 class PetugasPanelProvider extends PanelProvider
 {
@@ -26,6 +37,7 @@ class PetugasPanelProvider extends PanelProvider
             ->id('petugas')
             ->path('petugas')
             ->login()
+            ->databaseNotifications()
             ->colors([
                 'primary' => Color::Amber,
             ])
@@ -33,6 +45,13 @@ class PetugasPanelProvider extends PanelProvider
             ->discoverPages(in: app_path('Filament/Petugas/Pages'), for: 'App\\Filament\\Petugas\\Pages')
             ->pages([
                 Pages\Dashboard::class,
+            ])
+            ->resources([
+                BookResource::class,
+                BorrowResource::class,
+                KategoriBukuResource::class,
+                PopularitasResource::class,
+                UserResource::class,
             ])
             ->discoverWidgets(in: app_path('Filament/Petugas/Widgets'), for: 'App\\Filament\\Petugas\\Widgets')
             ->widgets([
@@ -52,6 +71,7 @@ class PetugasPanelProvider extends PanelProvider
             ])
             ->authMiddleware([
                 Authenticate::class,
-            ]);
+            ])
+            ->plugin(FilamentSpatieRolesPermissionsPlugin::make());
     }
 }
