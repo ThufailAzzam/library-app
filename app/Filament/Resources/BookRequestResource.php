@@ -214,11 +214,11 @@ class BookRequestResource extends Resource
                     ->visible(fn (BookRequest $record) => $record->status === 'pending'),
                 
                 Action::make('createBook')
-                    ->label('Add to Library')
+                    ->label('Tambah ke Perpustakaan')
                     ->icon('heroicon-o-plus-circle')
                     ->color('primary')
                     ->url(function (BookRequest $record) {
-                        // Pass the request ID as a parameter to the book creation page
+                        
                         return BookResource::getUrl('create', ['request_id' => $record->id]);
                     })
                     ->openUrlInNewTab()

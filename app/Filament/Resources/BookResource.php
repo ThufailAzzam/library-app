@@ -117,7 +117,7 @@ class BookResource extends Resource
             ]),
             CheckboxList::make('mobil') // Add this line
                 ->relationship('mobil', 'nopol') // Assuming 'nopol' is the car's license plate
-                ->label('Cars'),
+                ->label('Mobil'),
 
             ]);
     }
@@ -230,12 +230,12 @@ class BookResource extends Resource
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
                 Action::make('decreaseStock')
-                ->label('Decrease Stock')
+                ->label('Kurangi Stok')
                 ->color('danger')
                 ->icon('heroicon-o-minus')
                 ->form([
                     Forms\Components\TextInput::make('reason')
-                        ->label('Reason for Decreasing Stock')
+                        ->label('Apa Alasannya')
                         ->required(),
                 ])
                 ->action(function (BookModel $record, array $data) {
@@ -263,9 +263,9 @@ class BookResource extends Resource
                         ->send();
                 })
                 ->requiresConfirmation()
-                ->modalHeading('Decrease Stock')
+                ->modalHeading('Kurangi Stok')
                 ->modalDescription('Are you sure you want to decrease the stock of this book?')
-                ->modalSubmitActionLabel('Yes, decrease stock'),
+                ->modalSubmitActionLabel('Yes, kurangi stok.'),
 
                 Action::make('viewRequest')
                     ->label('View Request')

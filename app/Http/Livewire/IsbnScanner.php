@@ -45,7 +45,7 @@ class IsbnScanner extends Component
                 if (isset($data[$key])) {
                     $this->bookData = $data[$key];
                 } else {
-                    // Try Google Books API as a fallback
+                    
                     $googleResponse = Http::get("https://www.googleapis.com/books/v1/volumes?q=isbn:{$cleanIsbn}");
                     
                     if ($googleResponse->successful() && isset($googleResponse->json()['items'][0])) {
